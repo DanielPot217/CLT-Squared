@@ -1,5 +1,7 @@
 //Seeds the Database with Sample Projects
 
+// FOR TESTING ONLY
+
 const pool = require('../config/database');
 
 const sampleProjects = [

@@ -15,8 +15,6 @@ async function fetchFromCity(url, options = {}) {
     const requestOptions = {
       method: 'GET',
       headers: {
-        // 'User-Agent': 'CLT-Squared-Backend/1.0',
-        // 'Content-Type': 'application/json',
         ...options.headers,
       },
       timeout: options.timeout || 30000,

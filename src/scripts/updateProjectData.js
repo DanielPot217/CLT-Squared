@@ -1,5 +1,5 @@
 /**
- * Fetch data from an City of Charlotte API and save to the database
+ * Fetch data from an City of Charlotte API, Clean up the data, and save to Database
  * 
  * Configuration:
  *   Edit the API_URL and TABLE_NAME variables:
@@ -15,8 +15,7 @@ const pool = require('../config/database');
 const { fetchFromCity } = require('../utils/fetchCityData');
 
 
-// const API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/16/query?where=1=1&outFields=*&f=json';
-const API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/16/query?where=ObjectID=1%20OR%20ObjectID=2&outFields=*&f=json'
+const API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/16/query?where=1=1&outFields=*&f=json';
 const TABLE_NAME = 'projects';
 
 
@@ -26,8 +25,23 @@ const TABLE_NAME = 'projects';
  * @returns {Array<Object>} - Array of objects ready to insert to db
  */
 function transformData(data) {
-  
-  data = data['features']
+
+  //Concatenates Start/End Date and Year
+  data = data['features'].map(item => {
+    item.attributes.Start_Date = item.attributes.Anticipated_Start_Date_Year 
+      ? `${item.attributes.Anticipated_Start_Date} ${item.attributes.Anticipated_Start_Date_Year}`
+      : item.attributes.Anticipated_Start_Date;
+    item.attributes.End_Date = item.attributes.Anticipated_Compl_Date_Year
+      ? `${item.attributes.Anticipated_Compl_Date} ${item.attributes.Anticipated_Compl_Date_Year}`
+      : item.attributes.Anticipated_Compl_Date;
+    
+    delete item.attributes.Anticipated_Start_Date;
+    delete item.attributes.Anticipated_Start_Date_Year;
+    delete item.attributes.Anticipated_Compl_Date;
+    delete item.attributes.Anticipated_Compl_Date_Year;
+    
+    return item;
+  })
 
   return data
 }
@@ -36,12 +50,12 @@ function transformData(data) {
 /**
  * Save data to the database
  * This is a generic function that inserts data into a table
- * @param {Array<Object>} records - Array of records to insert
+ * @param {Array<Object>} projects - Array of projects to insert
  * @param {string} tableName - Target table name
  */
 async function saveToDatabase(projects, tableName) {
-  if (!records || records.length === 0) {
-    console.warn('Warning: No records to save');
+  if (!projects || projects.length === 0) {
+    console.warn('Warning: No projects found to save');
     return;
   }
 
@@ -51,20 +65,32 @@ async function saveToDatabase(projects, tableName) {
     // Start transaction
     await client.query('BEGIN');
 
-    // Get column names from the first record
-    // const columnList = ;
-    const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
+    const columns = 'project_id, name, description, location_description, start_date, end_date, status, budget, created_at';
+    const placeholders = '$1, $2, $3, $4, $5, $6, $7, $8, $9';
 
     // Prepare insert query
     const query = `
-      INSERT INTO ${tableName} (${columnList})
+      INSERT INTO ${tableName} (${columns})
       VALUES (${placeholders})`;
 
     // Insert each record
     let insertedCount = 0;
-    for (const record of records) {
-      const values = columns.map((col) => record[col]);
+    for (const project of projects) {
+
+      console.log(project)
+
+      const values = [project.attributes.ObjectID || 'Not Provided', 
+                      project.attributes.Project_Name || 'Not Provided', 
+                      project.attributes.Public_Project_Description || 'Not Provided', 
+                      project.attributes.Location_Description || 'Not Provided',
+                      project.attributes.Start_Date || 'Not Provided',
+                      project.attributes.End_Date || 'Not Provided',
+                      project.attributes.Status || 'Not Provided',
+                      project.attributes.Total_Project_Budget || 'Not Provided',
+                      new Date().toISOString()];
+
       const result = await client.query(query, values);
+
       if (result.rowCount > 0) {
         insertedCount++;
       }
@@ -72,7 +98,7 @@ async function saveToDatabase(projects, tableName) {
 
     // Commit transaction
     await client.query('COMMIT');
-    console.log(`✅ Successfully inserted ${insertedCount} records into ${tableName}`);
+    console.log(`Successfully inserted ${insertedCount} records into ${tableName}`);
 
     return insertedCount;
   } catch (error) {
@@ -105,12 +131,12 @@ async function main() {
     console.log(projects);
 
 
-  //   // 3. Save to database
-  //   console.log(`\n💾 Saving to database table: ${TABLE_NAME}`);
-  //   const savedCount = await saveToDatabase(records, TABLE_NAME);
+    // 3. Save to database
+    console.log(`\nSaving to database table: ${TABLE_NAME}`);
+    const savedCount = await saveToDatabase(projects, TABLE_NAME);
+    console.log('\nOperation completed successfully!');
+    console.log(`Summary: ${savedCount} projects saved to ${TABLE_NAME} table`);
 
-  //   console.log('\n✨ Operation completed successfully!');
-  //   console.log(`📊 Summary: ${savedCount} records saved to ${TABLE_NAME}`);
   } catch (error) {
     console.error('\nError:', error.message);
     process.exit(1);
