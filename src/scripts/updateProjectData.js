@@ -77,7 +77,10 @@ async function saveToDatabase(projects, tableName) {
     let insertedCount = 0;
     for (const project of projects) {
 
-      console.log(project)
+      if (process.env.NODE_ENV == 'development')
+      {
+        console.log(project)
+      }
 
       const values = [project.attributes.ObjectID || 'Not Provided', 
                       project.attributes.Project_Name || 'Not Provided', 
@@ -104,6 +107,7 @@ async function saveToDatabase(projects, tableName) {
   } catch (error) {
     // Rollback on error
     await client.query('ROLLBACK');
+    console.log('Error, Rolling Back Changes...');
     throw error;
   } finally {
     client.release();
@@ -127,8 +131,6 @@ async function main() {
     console.log('\nTransforming data');
     const projects = transformData(apiResponse);
     console.log(`Retrieved ${projects.length} projects`);
-
-    console.log(projects);
 
 
     // 3. Save to database
