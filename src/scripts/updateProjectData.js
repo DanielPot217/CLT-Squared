@@ -41,7 +41,7 @@ function transformData(data) {
  */
 async function saveToDatabase(records, tableName) {
   if (!records || records.length === 0) {
-    console.warn('⚠️  Warning: No records to save');
+    console.warn('Warning: No records to save');
     return;
   }
 
@@ -59,9 +59,7 @@ async function saveToDatabase(records, tableName) {
     // Prepare insert query
     const query = `
       INSERT INTO ${tableName} (${columnList})
-      VALUES (${placeholders})
-      ON CONFLICT DO NOTHING
-    `;
+      VALUES (${placeholders})`;
 
     // Insert each record
     let insertedCount = 0;
@@ -104,6 +102,8 @@ async function main() {
     console.log('\nTransforming data');
     const projects = transformData(apiResponse);
     console.log(`Retrieved ${projects.length} projects`);
+
+    console.log(projects);
 
 
   //   // 3. Save to database

@@ -9,8 +9,7 @@ const sampleProjects = [
     start_date: '2025-01-15',
     end_date: '2027-06-30',
     status: 'in-progress',
-    budget: 150000000,
-    location: 'Phoenix, Arizona'
+    budget: 150000000
   },
   {
     name: 'Bridge Rehabilitation Initiative',
@@ -18,8 +17,7 @@ const sampleProjects = [
     start_date: '2025-03-01',
     end_date: '2026-12-31',
     status: 'planning',
-    budget: 75000000,
-    location: 'State-wide'
+    budget: 75000000
   },
   {
     name: 'Smart Traffic System Implementation',
@@ -27,8 +25,7 @@ const sampleProjects = [
     start_date: '2026-02-01',
     end_date: '2027-03-31',
     status: 'planning',
-    budget: 45000000,
-    location: 'Phoenix Metropolitan Area'
+    budget: 45000000
   }
 ];
 
@@ -44,8 +41,8 @@ async function seedDatabase() {
     
     for (const project of sampleProjects) {
       const query = `
-        INSERT INTO projects (name, description, start_date, end_date, status, budget, location)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO projects (name, description, start_date, end_date, status, budget)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING project_id;
       `;
       
@@ -55,8 +52,7 @@ async function seedDatabase() {
         project.start_date,
         project.end_date,
         project.status,
-        project.budget,
-        project.location
+        project.budget
       ]);
       
       console.log(`Created project: ${project.name} (ID: ${result.rows[0].project_id})`);
