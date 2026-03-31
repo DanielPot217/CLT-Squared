@@ -39,7 +39,7 @@ function transformData(data) {
  * @param {Array<Object>} records - Array of records to insert
  * @param {string} tableName - Target table name
  */
-async function saveToDatabase(records, tableName) {
+async function saveToDatabase(projects, tableName) {
   if (!records || records.length === 0) {
     console.warn('Warning: No records to save');
     return;
@@ -52,8 +52,7 @@ async function saveToDatabase(records, tableName) {
     await client.query('BEGIN');
 
     // Get column names from the first record
-    const columns = Object.keys(records[0]);
-    const columnList = columns.join(', ');
+    // const columnList = ;
     const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
 
     // Prepare insert query
