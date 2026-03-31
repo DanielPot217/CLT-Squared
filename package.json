@@ -8,7 +8,8 @@
     "dev": "nodemon src/server.js",
     "test-db": "node src/testConnection.js",
     "setup-db": "node src/scripts/setupDatabase.js",
-    "seed-db": "node src/scripts/seedDatabase.js"
+    "seed-db": "node src/scripts/seedDatabase.js",
+    "update-project-data": "node src/scripts/updateProjectData.js"
   },
   "keywords": [],
   "author": "",
