@@ -1,3 +1,5 @@
+// Main API Endpoints
+
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -39,20 +41,46 @@ app.get('/db-health', async (req, res) => {
   }
 });
 
-// Sample route - get all tables
-app.get('/api/tables', async (req, res) => {
+
+// Get all projects
+app.get('/api/projects', async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public'
-    `);
+    const result = await pool.query('SELECT * FROM projects ORDER BY project_id ASC');
     res.status(200).json({
-      tables: result.rows.map(row => row.table_name),
-      count: result.rows.length
+      success: true,
+      count: result.rows.length,
+      projects: result.rows
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+});
+
+// Get project by ID
+app.get('/api/projects/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('SELECT * FROM projects WHERE project_id = $1', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Project not found'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      project: result.rows[0]
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
   }
 });
 
@@ -72,9 +100,14 @@ app.use((req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(`Check database health at http://localhost:${PORT}/db-health`);
-  console.log(`List tables at http://localhost:${PORT}/api/tables`);
+  if (process.env.NODE_ENV == 'development')
+  {
+    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Check nodejs server health http://localhost:${PORT}/health`);
+    console.log(`Check database health at http://localhost:${PORT}/db-health`);
+    console.log(`Get all projects at http://localhost:${PORT}/api/projects`);
+    console.log(`Get project by ID at http://localhost:${PORT}/api/projects/:id`);
+  }
 });
 
 // Graceful shutdown
