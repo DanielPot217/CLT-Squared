@@ -5,14 +5,20 @@ const cors = require('cors');
 require('dotenv').config();
 
 const pool = require('./config/database');
+const { swaggerUi, swaggerSpec } = require('./swaggerDocs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
+
+// API Documentation - Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -22,6 +28,7 @@ app.get('/health', (req, res) => {
     timestamp: new Date()
   });
 });
+
 
 // Database health check endpoint
 app.get('/db-health', async (req, res) => {
@@ -45,7 +52,15 @@ app.get('/db-health', async (req, res) => {
 // Get all projects
 app.get('/api/projects', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM projects ORDER BY project_id ASC');
+    const { sortBy, sortOrder } = req.query;
+    
+    const validSortFields = ['project_id'];
+    const sortField = sortBy && validSortFields.includes(sortBy) ? sortBy : 'project_id';
+    
+    const order = sortOrder && sortOrder.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    const orderByClause = `${sortField} ${order}`;
+    
+    const result = await pool.query(`SELECT * FROM projects ORDER BY ${orderByClause}`);
     res.status(200).json({
       success: true,
       count: result.rows.length,
@@ -107,6 +122,7 @@ app.listen(PORT, () => {
     console.log(`Check database health at http://localhost:${PORT}/db-health`);
     console.log(`Get all projects at http://localhost:${PORT}/api/projects`);
     console.log(`Get project by ID at http://localhost:${PORT}/api/projects/:id`);
+    console.log(`Swagger Documentation at http://localhost:${PORT}/api-docs`);
   }
 });
 
