@@ -79,6 +79,60 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 /**
  * @swagger
+ * /api/projects-short:
+ *   get:
+ *     summary: Retrieve all projects in short form
+ *     description: Fetches details for all projects but only these specific details - project_id, name, description, location_description, status. Retrieves from the database with optional sorting capabilities. Supports sorting by project_id in ascending or descending order.
+ *     tags:
+ *       - Projects
+ *     parameters:
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [project_id]
+ *         description: Field to sort results by. Defaults to 'project_id'
+ *         example: project_id
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [ASC, DESC]
+ *         description: Sort order direction. Defaults to 'ASC' (ascending)
+ *         example: DESC
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved all projects with minimal details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                   description: Number of projects returned
+ *                 projects:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     description: Project object with all short properties from the database
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 error:
+ *                   type: string
+ */
+
+/**
+ * @swagger
  * /api/projects/{id}:
  *   get:
  *     summary: Retrieve a project by ID
@@ -106,6 +160,59 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
  *                 project:
  *                   type: object
  *                   description: The project object with all properties from the database
+ *       404:
+ *         description: Project not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 error:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 error:
+ *                   type: string
+ */
+
+/**
+ * @swagger
+ * /api/projects-short/{id}:
+ *   get:
+ *     summary: Retrieve short details about a project by ID
+ *     description: Fetches details for a specific project from the database using its project ID, but only displaying these details - project_id, name, description, location_description, status.
+ *     tags:
+ *       - Projects
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique identifier of the project to retrieve
+ *         example: "1"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the project
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 project:
+ *                   type: object
+ *                   description: The project object with partial properties from the database
  *       404:
  *         description: Project not found
  *         content:
