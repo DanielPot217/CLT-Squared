@@ -9,7 +9,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
   ssl: {
-    ca: fs.readFileSync('./certs/global-bundle.pem').toString(),
+    ca: fs.readFileSync('../certs/global-bundle.pem').toString(),
     checkServerIdentity: true, 
     rejectUnauthorized: true 
   }
