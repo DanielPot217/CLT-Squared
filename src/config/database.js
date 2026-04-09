@@ -1,6 +1,9 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 const fs = require('fs');
+const path = require('path');
+
+const certPath = path.join(__dirname, '..', '..', 'certs', 'global-bundle.pem');
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -9,7 +12,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
   ssl: {
-    ca: fs.readFileSync('../certs/global-bundle.pem').toString(),
+    ca: fs.readFileSync(certPath).toString(),
     checkServerIdentity: true, 
     rejectUnauthorized: true 
   }
