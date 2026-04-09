@@ -12,8 +12,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
   ssl: {
-    ca: fs.readFileSync(certPath).toString(),
-    checkServerIdentity: true, 
+    ca: fs.readFileSync(certPath),
     rejectUnauthorized: true 
   }
 });
