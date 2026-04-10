@@ -38,6 +38,44 @@ const sampleProjects = [
   }
 ];
 
+// Sample geometries in GeoJSON format for each project
+const sampleGeometries = [
+  {
+    project_id: 1,
+    geometry: JSON.stringify({
+      type: 'LineString',
+      coordinates: [[-80.8431, 35.2271], [-80.8445, 35.2280], [-80.8460, 35.2290]]
+    })
+  },
+  {
+    project_id: 2,
+    geometry: JSON.stringify({
+      type: 'Point',
+      coordinates: [-80.8450, 35.2275]
+    })
+  },
+  {
+    project_id: 3,
+    geometry: JSON.stringify({
+      type: 'Polygon',
+      coordinates: [[
+        [-80.8440, 35.2270],
+        [-80.8460, 35.2270],
+        [-80.8460, 35.2285],
+        [-80.8440, 35.2285],
+        [-80.8440, 35.2270]
+      ]]
+    })
+  },
+  {
+    project_id: 4,
+    geometry: JSON.stringify({
+      type: 'LineString',
+      coordinates: [[-80.8420, 35.2260], [-80.8430, 35.2265]]
+    })
+  }
+];
+
 async function seedDatabase() {
   let client;
   try {
@@ -87,6 +125,10 @@ async function seedDatabase() {
     
     console.log('\n========================================');
     console.log(`Total projects seeded: ${allProjects.rows.length}`);
+    
+    // Seed geometrics table
+    await seedGeometrics(client, allProjects.rows);
+    
     process.exit(0);
   } catch (error) {
     console.error('Error seeding database:', error.message);
@@ -95,6 +137,45 @@ async function seedDatabase() {
     if (client) {
       client.release();
     }
+  }
+}
+
+async function seedGeometrics(client, projects) {
+  try {
+    console.log('\n\nSeeding database with sample geometries...\n');
+    
+    for (const geometryData of sampleGeometries) {
+      const project = projects.find(p => p.project_id === geometryData.project_id);
+      
+      if (project) {
+        const query = `
+          INSERT INTO geometrics (project_id, features)
+          VALUES ($1, $2)
+          RETURNING project_id;
+        `;
+        
+        const result = await client.query(query, [geometryData.project_id, geometryData.geometry]);
+        
+        console.log(`Created geometry for project ID: ${geometryData.project_id} (${project.name})`);
+      }
+    }
+    
+    // Get all geometries
+    const allGeometries = await client.query('SELECT * FROM geometrics ORDER BY project_id;');
+    
+    console.log('\n\nAll geometries in database:');
+    console.log('========================================');
+    allGeometries.rows.forEach(geom => {
+      console.log(`\nProject ID: ${geom.project_id}`);
+      console.log(`Geometry: ${geom.geometry}`);
+      console.log(`Created at: ${geom.created_at}`);
+    });
+    
+    console.log('\n========================================');
+    console.log(`Total geometries seeded: ${allGeometries.rows.length}`);
+  } catch (error) {
+    console.error('Error seeding geometrics table:', error.message);
+    throw error;
   }
 }
 

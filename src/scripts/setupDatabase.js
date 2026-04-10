@@ -47,6 +47,22 @@ async function setupDatabase() {
     });
     console.log('----------------------------------------');
     
+    // Get columns for geometrics table
+    const geometricsColumns = await client.query(`
+      SELECT column_name, data_type, is_nullable
+      FROM information_schema.columns
+      WHERE table_name = 'geometrics'
+      ORDER BY ordinal_position
+    `);
+    
+    console.log('\nGeometrics table schema:');
+    console.log('----------------------------------------');
+    geometricsColumns.rows.forEach(col => {
+      const nullable = col.is_nullable === 'YES' ? '(nullable)' : '(required)';
+      console.log(`  ${col.column_name.padEnd(15)} ${col.data_type.padEnd(20)} ${nullable}`);
+    });
+    console.log('----------------------------------------');
+    
     console.log('\nAll setup complete! Your database is ready to use.');
     process.exit(0);
   } catch (error) {
