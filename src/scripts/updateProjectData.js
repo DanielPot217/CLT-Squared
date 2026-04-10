@@ -18,8 +18,6 @@ const { fetchFromCity } = require('../utils/fetchCityData');
 const DETAILS_API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/16/query?where=1=1&outFields=*&f=json';
 const GEO_POINTS_API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/18/query?where=1=1&outFields=*&returnGeometry=true&f=geojson';
 
-// const GEO_POINTS_API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/18/query?where=OBJECTID=2684237&outFields=*&returnGeometry=true&f=geojson'
-
 const DETAILS_TABLE_NAME = 'projects';
 const GEO_TABLE_NAME = 'geometrics';
 

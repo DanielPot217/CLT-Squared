@@ -151,6 +151,31 @@ app.get('/api/projects-short/:id', async (req, res) => {
   }
 });
 
+// Get all geometrics
+app.get('/api/geometrics', async (req, res) => {
+  try {
+    const { sortBy, sortOrder } = req.query;
+    
+    const validSortFields = ['project_id', 'id'];
+    const sortField = sortBy && validSortFields.includes(sortBy) ? sortBy : 'id';
+    
+    const order = sortOrder && sortOrder.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    const orderByClause = `${sortField} ${order}`;
+    
+    const result = await pool.query(`SELECT * FROM geometrics ORDER BY ${orderByClause}`);
+    res.status(200).json({
+      success: true,
+      count: result.rows.length,
+      geometrics: result.rows
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -176,6 +201,7 @@ app.listen(PORT, () => {
     console.log(`Get all projects short at http://localhost:${PORT}/api/projects-short`);
     console.log(`Get project by ID at http://localhost:${PORT}/api/projects/:id`);
     console.log(`Get project short by ID at http://localhost:${PORT}/api/projects-short/:id`);
+    console.log(`Get all geometrics at http://localhost:${PORT}/api/geometrics`);
     console.log(`Swagger Documentation at http://localhost:${PORT}/api-docs`);
   }
 });

@@ -237,6 +237,73 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
  *                   type: string
  */
 
+/**
+ * @swagger
+ * /api/geometrics:
+ *   get:
+ *     summary: Retrieve all geometric data
+ *     description: Fetches all geometric/spatial data from the geometrics table with optional sorting capabilities. Supports sorting by project_id or id in ascending or descending order.
+ *     tags:
+ *       - Geometrics
+ *     parameters:
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [project_id, id]
+ *         description: Field to sort results by. Defaults to 'id'
+ *         example: project_id
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [ASC, DESC]
+ *         description: Sort order direction. Defaults to 'ASC' (ascending)
+ *         example: ASC
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved all geometric data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                   description: Number of geometric records returned
+ *                 geometrics:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: Unique identifier
+ *                       project_id:
+ *                         type: string
+ *                         description: Project identifier
+ *                       features:
+ *                         type: string
+ *                         description: GeoJSON geometry data
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Record creation timestamp
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 error:
+ *                   type: string
+ */
+
 module.exports = {
   swaggerUi,
   swaggerSpec
