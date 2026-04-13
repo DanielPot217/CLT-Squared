@@ -16,8 +16,10 @@ const { fetchFromCity } = require('../utils/fetchCityData');
 
 
 const DETAILS_API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/16/query?where=1=1&outFields=*&f=json';
+
 const GEO_POINTS_API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/18/query?where=1=1&outFields=*&returnGeometry=true&f=geojson';
 const GEO_LINES_API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/19/query?where=1=1&outFields=*&returnGeometry=true&f=geojson';
+const GEO_POLY_API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/22/query?where=1=1&outFields=*&returnGeometry=true&f=geojson';
 
 
 const DETAILS_TABLE_NAME = 'projects';
@@ -58,7 +60,7 @@ function transformDetailsData(data) {
  * @param {any} data - Raw data from API
  * @returns {Promise<Array<Object>>} - Array of objects ready to insert to db
  */
-async function transformGeoPointData(data) {
+async function transformGeoData(data) {
   
   const features = data['features'];
   const transformedData = [];
@@ -257,7 +259,7 @@ async function main() {
 
     // // 2. Transform geometry point data
     console.log('\nTransforming project points data');
-    const points = await transformGeoPointData(apiGeoPointResponse);
+    const points = await transformGeoData(apiGeoPointResponse);
     console.log(`Retrieved ${points.length} points`);
 
     // 3. Save geometry point data to database
@@ -275,7 +277,7 @@ async function main() {
 
     // 2. Transform lines data
     console.log('\nTransforming project lines data');
-    const lines = await transformGeoPointData(apiGeoLinesResponse);
+    const lines = await transformGeoData(apiGeoLinesResponse);
     console.log(`Retrieved ${lines.length} lines`);
 
     // 3. Save geometry lines data to database
@@ -283,6 +285,25 @@ async function main() {
     const savedGeoLinesCount = await saveGeoToDatabase(lines, GEO_TABLE_NAME);
     console.log('\nOperation completed successfully!');
     console.log(`Summary: ${savedGeoLinesCount} lines saved to ${GEO_TABLE_NAME} table`);
+
+
+
+    // 1. Fetch gemotetry polygons data from API
+    console.log(`Fetching project polygons data from: ${GEO_POLY_API_URL}`);
+    const apiGeoPolyResponse = await fetchFromCity(GEO_POLY_API_URL);
+    console.log('Data fetched successfully');
+
+    // 2. Transform polygons data
+    console.log('\nTransforming project polygons data');
+    const polygons = await transformGeoData(apiGeoPolyResponse);
+    console.log(polygons)
+    console.log(`Retrieved ${polygons.length} lines`);
+
+    // 3. Save geometry polygons data to database
+    console.log(`\nSaving to database table: ${GEO_TABLE_NAME}`);
+    const savedGeoPolygonsCount = await saveGeoToDatabase(polygons, GEO_TABLE_NAME);
+    console.log('\nOperation completed successfully!');
+    console.log(`Summary: ${savedGeoPolygonsCount} polygons saved to ${GEO_TABLE_NAME} table`);
 
 
   } catch (error) {
@@ -293,6 +314,6 @@ async function main() {
   }
 }
 
-module.exports = { saveToDatabase, saveGeoToDatabase, transformDetailsData};
+module.exports = { saveToDatabase, saveGeoToDatabase, transformDetailsData, transformGeoData};
 
 main();
