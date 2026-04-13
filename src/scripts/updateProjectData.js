@@ -17,6 +17,8 @@ const { fetchFromCity } = require('../utils/fetchCityData');
 
 const DETAILS_API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/16/query?where=1=1&outFields=*&f=json';
 const GEO_POINTS_API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/18/query?where=1=1&outFields=*&returnGeometry=true&f=geojson';
+const GEO_LINES_API_URL = 'https://gis.charlottenc.gov/arcgis/rest/services/CIP/CapitalImprovementProjectsService/MapServer/19/query?where=1=1&outFields=*&returnGeometry=true&f=geojson';
+
 
 const DETAILS_TABLE_NAME = 'projects';
 const GEO_TABLE_NAME = 'geometrics';
@@ -62,12 +64,15 @@ async function transformGeoPointData(data) {
   const transformedData = [];
   
   for (const item of features) {
-    let projectName = item.properties.ProjectName.trim();
-    
-    // Replace abbreviations with full names
-    projectName = projectName.replace(/\s+dr\s*$/i, ' Drive');
-    projectName = projectName.replace(/\s+ave\s*$/i, ' Avenue');
-    projectName = projectName.replace(/\s+rd\s*$/i, ' Road');
+    let projectName = item.properties.ProjectName || item.properties.Project_Name;
+
+    if (projectName){
+      // Replace abbreviations with full names
+      projectName = projectName.trim()
+      projectName = projectName.replace(/\s+dr\s*$/i, ' Drive');
+      projectName = projectName.replace(/\s+ave\s*$/i, ' Avenue');
+      projectName = projectName.replace(/\s+rd\s*$/i, ' Road');
+    }
 
     
     const result = await pool.query(
@@ -246,20 +251,39 @@ async function main() {
 
 
     // 1. Fetch gemotetry point data from API
-    console.log(`Fetching project details data from: ${GEO_POINTS_API_URL}`);
-    const apiGeoResponse = await fetchFromCity(GEO_POINTS_API_URL);
+    console.log(`Fetching project points data from: ${GEO_POINTS_API_URL}`);
+    const apiGeoPointResponse = await fetchFromCity(GEO_POINTS_API_URL);
     console.log('Data fetched successfully');
 
     // // 2. Transform geometry point data
-    console.log('\nTransforming project details data');
-    const geometrics = await transformGeoPointData(apiGeoResponse);
-    console.log(`Retrieved ${geometrics.length} geometrics`);
+    console.log('\nTransforming project points data');
+    const points = await transformGeoPointData(apiGeoPointResponse);
+    console.log(`Retrieved ${points.length} points`);
 
     // 3. Save geometry point data to database
     console.log(`\nSaving to database table: ${GEO_TABLE_NAME}`);
-    const savedGeoCount = await saveGeoToDatabase(geometrics, GEO_TABLE_NAME);
+    const savedGeoCount = await saveGeoToDatabase(points, GEO_TABLE_NAME);
     console.log('\nOperation completed successfully!');
-    console.log(`Summary: ${savedGeoCount} projects saved to ${GEO_TABLE_NAME} table`);
+    console.log(`Summary: ${savedGeoCount} points saved to ${GEO_TABLE_NAME} table`);
+
+
+
+    // 1. Fetch gemotetry lines data from API
+    console.log(`Fetching project details data from: ${GEO_LINES_API_URL}`);
+    const apiGeoLinesResponse = await fetchFromCity(GEO_LINES_API_URL);
+    console.log('Data fetched successfully');
+
+    // 2. Transform lines data
+    console.log('\nTransforming project lines data');
+    const lines = await transformGeoPointData(apiGeoLinesResponse);
+    console.log(`Retrieved ${lines.length} lines`);
+
+    // 3. Save geometry lines data to database
+    console.log(`\nSaving to database table: ${GEO_TABLE_NAME}`);
+    const savedGeoLinesCount = await saveGeoToDatabase(lines, GEO_TABLE_NAME);
+    console.log('\nOperation completed successfully!');
+    console.log(`Summary: ${savedGeoLinesCount} lines saved to ${GEO_TABLE_NAME} table`);
+
 
   } catch (error) {
     console.error('\nError:', error.message);
@@ -269,6 +293,6 @@ async function main() {
   }
 }
 
-module.exports = { saveToDatabase, saveGeoToDatabase, transformGeoData};
+module.exports = { saveToDatabase, saveGeoToDatabase, transformDetailsData};
 
 main();
