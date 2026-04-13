@@ -3,7 +3,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 
-// const certPath = path.join(__dirname, '..', '..', 'certs', 'global-bundle.pem');
+const certPath = path.join(__dirname, '..', '..', 'certs', 'global-bundle.pem');
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -11,10 +11,10 @@ const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
-  // ssl: {
-  //   ca: fs.readFileSync(certPath),
-  //   rejectUnauthorized: true 
-  // }
+  ssl: {
+    ca: fs.readFileSync(certPath),
+    rejectUnauthorized: true 
+  }
 });
 
 // Event listeners for pool
