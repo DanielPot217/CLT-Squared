@@ -24,7 +24,7 @@ const DetailsScreen = () => {
     return [-80.8431, 35.2271];
   };
 
-  const [center] = useState(getCoordinates(selectedFeature));
+  const center = getCoordinates(selectedFeature);
 
   if (loading) {
     return (
