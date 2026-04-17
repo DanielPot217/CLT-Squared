@@ -64,7 +64,7 @@ const DetailsScreen = () => {
           <CircleLayer id="combinedPoints" filter={['==', ['geometry-type'], 'Point']} style={{ circleColor: 'red' }} />
         </ShapeSource>
       </MapView>
-      <View style={styles.textContainer}>
+      <View>
         <Text style={styles.title}>{p.Project_Name || 'Untitled Project'}</Text>
         <Text style={styles.field}><Text style={styles.label}>ID: </Text>{p.OBJECTID}</Text>
         <Text style={styles.field}><Text style={styles.label}>Status: </Text>{p.Status || 'N/A'}</Text>
@@ -79,16 +79,51 @@ const DetailsScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'white' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   loadingText: { marginTop: 12, fontSize: 16, color: '#555' },
   errorText: { fontSize: 18, fontWeight: 'bold', color: 'red', marginBottom: 8 },
   errorDetail: { fontSize: 14, color: '#666', textAlign: 'center' },
-  mapContainer: { flex: 1 },
-  textContainer: { flex: 1, padding: 16 },
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 12 },
   field: { fontSize: 14, color: '#333', marginBottom: 4 },
-  label: { fontWeight: 'bold' },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: 'white'
+  },
+
+  mapContainer: {
+    width: '100%',
+    height: 180,
+    marginVertical: 15,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+
+  detailsSection: {
+    marginTop: 10
+  },
+
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 6
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginBottom: 10
+  },
+
+  label: {
+    fontWeight: 'bold'
+  },
+
+  detailText: {
+    fontSize: 16,
+    marginBottom: 8,
+    lineHeight: 22
+  }
 });
 
 export default DetailsScreen;

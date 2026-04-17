@@ -109,13 +109,13 @@ const CharlotteMapTest = () => {
 
       <View style={styles.layerControlContainer}>
         <TouchableOpacity style={[styles.floatingButton, !showPoints && styles.buttonDisabled]} onPress={() => setShowPoints(!showPoints)}>
-          <Text style={styles.buttonText}>Points</Text>
+          <Text style={styles.buttonText}>Small Projects</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.floatingButton, !showLines && styles.buttonDisabled]} onPress={() => setShowLines(!showLines)}>
-          <Text style={styles.buttonText}>Lines</Text>
+          <Text style={styles.buttonText}>Road & Lightrail</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.floatingButton, !showPolygons && styles.buttonDisabled]} onPress={() => setShowPolygons(!showPolygons)}>
-          <Text style={styles.buttonText}>Polygons</Text>
+          <Text style={styles.buttonText}>Construction & Renovation</Text>
         </TouchableOpacity>
       </View>
 
@@ -131,26 +131,56 @@ const CharlotteMapTest = () => {
 export default CharlotteMapTest;
 
 const styles = StyleSheet.create({
-  page: { flex: 1 },
-  map: { flex: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   loadingText: { marginTop: 12, fontSize: 16, color: '#555' },
   errorText: { fontSize: 18, fontWeight: 'bold', color: 'red', marginBottom: 8 },
   errorDetail: { fontSize: 14, color: '#666', textAlign: 'center' },
-  layerControlContainer: { position: 'absolute', top: 50, right: 15, gap: 10 },
+  page: {
+    flex: 1,
+  },
+  map: {
+    height: '100%',
+    width: '90%',
+    alignSelf: 'center',
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginTop: 20,
+  },
+  // Container for the layer toggle stack
+  layerControlContainer: {
+    position: 'absolute',
+    top: 50, // Below the status bar
+    right: 15,
+    gap: 10, // Adds space between buttons
+  },
+  // Individual button style
   floatingButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#2e7d32', // maybe change the color to '#2e7d32' so when its activated it matches the green in the navigation bar
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 8,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    elevation: 8, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    //added to make it pop
+    borderWidth: 1,
+    borderColor: '#1b5e20',
+    borderBottomWidth: 3,
+    borderBottomColor: '#1b5e20',
   },
-  buttonDisabled: { backgroundColor: '#999' },
-  buttonText: { color: 'white', fontWeight: 'bold', textAlign: 'center' },
+  buttonDisabled: {
+    backgroundColor: '#969c9f', // Gray out when hidden; this makes since but we could also do a version of this color '#d4f5d0', to tie in with the navigation bar
+    borderColor: '#999',
+    borderBottomColor: '#999',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  // Recenter button specific style
   recenterButton: {
     position: 'absolute',
     bottom: 30,
