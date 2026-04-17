@@ -9,12 +9,12 @@ import { FeatureCollection, Geometry } from 'geojson';
 
 // ─── Config ────────────────────────────────────────────────────────────────
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://ec2-13-59-74-87.us-east-2.compute.amazonaws.com:3100';
+const API_BASE = 'http://ec2-13-59-74-87.us-east-2.compute.amazonaws.com:3100';
 
 const CACHE_KEY = 'clt_geojson_cache';
 const CACHE_TIMESTAMP_KEY = 'clt_geojson_cache_timestamp';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-
+const CHUNK_SIZE = 100;
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface Project {
@@ -39,11 +39,19 @@ interface Geometric {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 async function fetchJSON<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`);
-  if (!response.ok) {
-    throw new Error(`API error ${response.status} on ${path}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000); 
+
+  try {
+    const response = await fetch(`${API_BASE}${path}`, { signal: controller.signal });
+    if (!response.ok) throw new Error(`API error ${response.status} on ${path}`);
+    return response.json();
+  } catch (e: any) {
+    if (e.name === 'AbortError') throw new Error(`Request timed out: ${path}`);
+    throw e;
+  } finally {
+    clearTimeout(timeout);
   }
-  return response.json();
 }
 
 /**
@@ -94,32 +102,39 @@ function buildFeatureCollection(
 
 // ─── Cache ──────────────────────────────────────────────────────────────────
 
-async function readCache(): Promise<FeatureCollection | null> {
+async function writeCache(data: FeatureCollection): Promise<void> {
   try {
-    const [cached, ts] = await Promise.all([
-      AsyncStorage.getItem(CACHE_KEY),
-      AsyncStorage.getItem(CACHE_TIMESTAMP_KEY),
+    const chunks = [];
+    for (let i = 0; i < data.features.length; i += CHUNK_SIZE) {
+      chunks.push(data.features.slice(i, i + CHUNK_SIZE));
+    }
+    const pairs: [string, string][] = chunks.map((chunk, i) => [
+      `${CACHE_KEY}_chunk_${i}`,
+      JSON.stringify(chunk),
     ]);
-
-    if (!cached || !ts) return null;
-
-    const age = Date.now() - parseInt(ts, 10);
-    if (age > CACHE_TTL_MS) return null;
-
-    return JSON.parse(cached) as FeatureCollection;
-  } catch {
-    return null;
+    pairs.push([`${CACHE_KEY}_chunks`, String(chunks.length)]);
+    pairs.push([CACHE_TIMESTAMP_KEY, Date.now().toString()]);
+    await AsyncStorage.multiSet(pairs);
+  } catch (e) {
+    console.warn('Failed to write cache:', e);
   }
 }
 
-async function writeCache(data: FeatureCollection): Promise<void> {
+async function readCache(): Promise<FeatureCollection | null> {
   try {
-    await Promise.all([
-      AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data)),
-      AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString()),
+    const [countStr, ts] = await Promise.all([
+      AsyncStorage.getItem(`${CACHE_KEY}_chunks`),
+      AsyncStorage.getItem(CACHE_TIMESTAMP_KEY),
     ]);
-  } catch (e) {
-    console.warn('Failed to write cache:', e);
+    if (!countStr || !ts) return null;
+    if (Date.now() - parseInt(ts, 10) > CACHE_TTL_MS) return null;
+
+    const keys = Array.from({ length: parseInt(countStr, 10) }, (_, i) => `${CACHE_KEY}_chunk_${i}`);
+    const pairs = await AsyncStorage.multiGet(keys);
+    const features = pairs.flatMap(([, val]) => val ? JSON.parse(val) : []);
+    return { type: 'FeatureCollection', features };
+  } catch {
+    return null;
   }
 }
 

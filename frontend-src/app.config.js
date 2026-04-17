@@ -1,17 +1,13 @@
 // app.config.js
-import 'dotenv/config'; // Requires: npm install dotenv
+import 'dotenv/config';
 
-export default ({ config }) => {
-  return {
-    ...config, // This copies everything currently in your app.json
-    plugins: [
-      [
-        "@rnmapbox/maps",
-        {
-          // Reads the secret token from your .env file
-          RNMapboxMapsDownloadToken: process.env.MAPBOX_DOWNLOAD_TOKEN
-        }
-      ]
+export default ({ config }) => ({
+  ...config,
+  plugins: [
+    ...(config.plugins || []),  // keep expo-router, expo-splash-screen, etc.
+    [
+      "@rnmapbox/maps",
+      { RNMapboxMapsDownloadToken: process.env.MAPBOX_DOWNLOAD_TOKEN }
     ]
-  };
-};
+  ]
+});

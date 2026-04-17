@@ -27,7 +27,7 @@ const LoadingScreen = ({ onFinish }: { onFinish: () => void }) => {
     <View style={styles.container}>
       <Animated.View style={{ opacity }}>
         <Image
-          source={require('../assets/images/CLTLogo.png')} // update path to your logo
+          source={require('../assets/images/CLTLogo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
